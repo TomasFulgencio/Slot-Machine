@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun SlotMachineApp(viewModel: SlotMachineViewModel = viewModel()) {
+    // Observa os estados da ViewModel
     val slots = viewModel.slots
     val isSpinning by viewModel.isSpinning
     val resultMessage by viewModel.resultMessage
@@ -46,7 +47,7 @@ fun SlotMachineApp(viewModel: SlotMachineViewModel = viewModel()) {
         animationSpec = tween(durationMillis = 500)
     )
 
-    // Animação de piscar se ganhar
+    // Animação de piscar nos símbolos quando se ganha
     val transition = rememberInfiniteTransition()
     val blinkingAlpha by transition.animateFloat(
         initialValue = 1f,
@@ -57,15 +58,17 @@ fun SlotMachineApp(viewModel: SlotMachineViewModel = viewModel()) {
         )
     )
 
+    // Layout principal em coluna
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .fillMaxSize() // Ocupa toda a tela
+            .background(backgroundColor) // Cor de fundo animada
+            .padding(16.dp), // Espaçamento interno
+        verticalArrangement = Arrangement.Center, // Centraliza verticalmente
+        horizontalAlignment = Alignment.CenterHorizontally // Centraliza horizontalmente
     ) {
 
+        // Exibe o número de moedas e vitórias
         Text(
             text = "Moedas: $coins | Vitórias: $winCount",
             fontSize = 18.sp,
@@ -74,6 +77,7 @@ fun SlotMachineApp(viewModel: SlotMachineViewModel = viewModel()) {
             modifier = Modifier.padding(bottom = 20.dp)
         )
 
+        // Linha com os símbolos da slot machine
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             slots.forEach { symbol ->
                 Text(
@@ -83,33 +87,35 @@ fun SlotMachineApp(viewModel: SlotMachineViewModel = viewModel()) {
                     modifier = Modifier
                         .graphicsLayer {
                             alpha = if (resultMessage == "Ganhaste!") blinkingAlpha else 1f
-                        }
-                        .background(Color.DarkGray, shape = RoundedCornerShape(8.dp))
+                        } // Aplica efeito de piscar se ganhar
+                        .background(Color.DarkGray, shape = RoundedCornerShape(8.dp)) // Fundo arredondado
                         .padding(16.dp)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(24.dp)) // Espaço entre os símbolos e o botão
 
+        // Botão para girar a slot machine
         Button(
             onClick = {
+                // Toca o som e chama o metodo de spin na ViewModel
                 (context as? MainActivity)?.playSpinSound()
                 viewModel.spin()
             },
-            enabled = !isSpinning,
+            enabled = !isSpinning, // Desabilita se estiver a girar
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (isSpinning) Color.Gray else Color.Red
             )
         ) {
             Text(
-                if (isSpinning) "Spinning..." else "SPIN",
+                if (isSpinning) "Spinning..." else "SPIN", // Texto muda dependendo do estado
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
         }
 
-        // Mensagem de vitória (se existir)
+        // Mensagem de vitória, se existir
         resultMessage?.let { message ->
             Spacer(modifier = Modifier.height(20.dp))
             Text(
