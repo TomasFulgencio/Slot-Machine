@@ -20,6 +20,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private var shake = 0f
 
     private lateinit var viewModel: SlotMachineViewModel
+    private var spinPlayer: MediaPlayer? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +61,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
             if (shake > 12) {
                 viewModel.spin()
+                playSpinSound()
             }
         }
     }
@@ -70,11 +73,27 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         sensorManager.unregisterListener(this)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        spinPlayer?.release()
+        spinPlayer = null
+    }
+
     private fun playWinSound() {
         val mediaPlayer = MediaPlayer.create(this, R.raw.win_sound)
         mediaPlayer.start()
         mediaPlayer.setOnCompletionListener {
             it.release()
+        }
+    }
+
+    fun playSpinSound() {
+        spinPlayer?.release()
+        spinPlayer = MediaPlayer.create(this, R.raw.spin_sound)
+        spinPlayer?.start()
+        spinPlayer?.setOnCompletionListener {
+            it.release()
+            spinPlayer = null
         }
     }
 }

@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,6 +28,8 @@ fun SlotMachineApp(viewModel: SlotMachineViewModel = viewModel()) {
     val slots = viewModel.slots
     val isSpinning by viewModel.isSpinning
     val resultMessage by viewModel.resultMessage
+
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -52,7 +55,10 @@ fun SlotMachineApp(viewModel: SlotMachineViewModel = viewModel()) {
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { viewModel.spin() },
+            onClick = {
+                (context as? MainActivity)?.playSpinSound()
+                viewModel.spin()
+            },
             enabled = !isSpinning,
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (isSpinning) Color.Gray else Color.Red
