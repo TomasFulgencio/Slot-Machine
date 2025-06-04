@@ -21,9 +21,16 @@ class SlotMachineViewModel : ViewModel() {
     private val _resultMessage = mutableStateOf<String?>(null)
     val resultMessage: State<String?> get() = _resultMessage
 
-    fun spin() {
-        if (_isSpinning.value) return
+    private val _winCount = mutableStateOf(0)
+    val winCount: State<Int> get() = _winCount
 
+    private val _coins = mutableStateOf(50)
+    val coins: State<Int> get() = _coins
+
+    fun spin() {
+        if (_isSpinning.value || _coins.value <= 0) return
+
+        _coins.value -= 1
         _isSpinning.value = true
         _resultMessage.value = null // limpa mensagem anterior
 
@@ -38,6 +45,8 @@ class SlotMachineViewModel : ViewModel() {
 
             // Verifica se os 3 são iguais
             if (_slots[0] == _slots[1] && _slots[1] == _slots[2]) {
+                _winCount.value++
+                _coins.value += 5
                 _resultMessage.value = "Ganhaste!"
             }
         }

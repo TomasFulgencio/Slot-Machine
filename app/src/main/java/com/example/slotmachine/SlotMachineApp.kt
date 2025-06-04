@@ -1,5 +1,11 @@
 package com.example.slotmachine
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,17 +35,45 @@ fun SlotMachineApp(viewModel: SlotMachineViewModel = viewModel()) {
     val slots = viewModel.slots
     val isSpinning by viewModel.isSpinning
     val resultMessage by viewModel.resultMessage
+    val coins by viewModel.coins
+    val winCount by viewModel.winCount
 
     val context = LocalContext.current
+
+    // Cor de fundo a dourado se ganhar, preto caso contrário
+    val backgroundColor by animateColorAsState(
+        targetValue = if (resultMessage == "Ganhaste!") Color(0xFFFFD700) else Color.Black,
+        animationSpec = tween(durationMillis = 500)
+    )
+
+    // Animação de piscar se ganhar
+    val transition = rememberInfiniteTransition()
+    val blinkingAlpha by transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.3f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(backgroundColor)
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        Text(
+            text = "Moedas: $coins | Vitórias: $winCount",
+            fontSize = 18.sp,
+            color = Color.Yellow,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 20.dp)
+        )
+
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             slots.forEach { symbol ->
                 Text(
@@ -46,6 +81,9 @@ fun SlotMachineApp(viewModel: SlotMachineViewModel = viewModel()) {
                     fontSize = 48.sp,
                     color = Color.White,
                     modifier = Modifier
+                        .graphicsLayer {
+                            alpha = if (resultMessage == "Ganhaste!") blinkingAlpha else 1f
+                        }
                         .background(Color.DarkGray, shape = RoundedCornerShape(8.dp))
                         .padding(16.dp)
                 )
@@ -79,6 +117,16 @@ fun SlotMachineApp(viewModel: SlotMachineViewModel = viewModel()) {
                 fontSize = 24.sp,
                 color = Color.Yellow,
                 fontWeight = FontWeight.Bold
+            )
+        }
+
+        // Mensagem se não houver moedas
+        if (coins <= 0 && !isSpinning) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "Sem moedas!",
+                color = Color.Red,
+                fontWeight = FontWeight.SemiBold
             )
         }
     }
